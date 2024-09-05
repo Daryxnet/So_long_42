@@ -10,11 +10,12 @@
 #                                                                              #
 # **************************************************************************** #
 
-NAME   = so_long
-CFLAGS = -Wextra -Werror -Wall -Ldl -lglfw -pthread -lm
-LIBMLX = ./lib/MLX42/include/MLX42
+NAME     = so_long
+CFLAGS   = -Wextra -Werror -Wall
+LIBMLX   = ./lib/MLX42/include/MLX42
+MLXFLAGS = -L/usr/lib/x86_64-linux-gnu -lglfw -lGL -lm -pthread
 
 comp: 
-	cc $(CFLAGS) -I$(LIBMLX) test_hook_key.c libmlx42.a
+	cc $(CFLAGS) -I$(LIBMLX) test_hook_key.c libmlx42.a $(MLXFLAGS)
 
 .PHONY: comp

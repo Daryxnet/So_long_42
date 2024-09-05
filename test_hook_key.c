@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdio.h>
 #include "MLX42.h"
-#define WIDTH 2304
-#define HEIGHT 1296
+#define WIDTH 500
+#define HEIGHT 400
 
 void my_keyhook(mlx_key_data_t keydata, void* param)
 {
