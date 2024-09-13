@@ -6,7 +6,7 @@
 #    By: dagarmil <dagarmil@student.42barcelon      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/08/28 12:48:53 by dagarmil          #+#    #+#              #
-#    Updated: 2024/09/10 10:40:28 by dagarmil         ###   ########.fr        #
+#    Updated: 2024/09/13 14:32:40 by dagarmil         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 NAME = so_long.out
@@ -18,6 +18,7 @@ MLX42_BUILD = lib/MLX42/build
 LIBFT_LIB = $(LIBFT_DIR)/Libftnew.a
 MLX42_LIB = $(MLX42_BUILD)/libmlx42.a
 MLX42_H   = lib/MLX42/include/MLX42/
+LIBFT_H   = lib/Libft/includes/
 
 CC = cc
 CFLAGS = -Wall -Wextra -Werror
@@ -28,7 +29,7 @@ SRC = src/so_long.c
 all: $(NAME)
 
 $(NAME): $(LIBFT_LIB) $(MLX42_LIB) $(SRC)
-	$(CC) $(CFLAGS) -I./$(MLX42_H) $(SRC) $(LIBFT_LIB) $(MLX42_LIB) $(FLAGSMLX42) -o $(NAME)
+	$(CC) $(CFLAGS) -I./$(MLX42_H) -I./$(LIBFT_H) $(SRC) $(LIBFT_LIB) $(MLX42_LIB) $(FLAGSMLX42) -o $(NAME)
 
 $(LIBFT_LIB):
 	@echo "Compiling Libft..."
