@@ -6,204 +6,206 @@
 /*   By: dagarmil <dagarmil@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/13 15:51:44 by dagarmil          #+#    #+#             */
-/*   Updated: 2024/09/17 12:20:43 by dagarmil         ###   ########.fr       */
+/*   Updated: 2024/09/17 15:54:33 by dagarmil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
 #include "MLX42.h"
 #include "libft.h"
+#include <fcntl.h>
 #define WIDTH 1500
-#define HEIGHT 1400
+#define HEIGHT 1000
+#define TILE_SIZE 200
 
-//Player struct
+// Player struct
 typedef struct s_player {
 	int x;
 	int y;
 } t_player;
 
-//Map Struct
+// Game struct
 typedef struct s_game {
 	t_player player;
 	char **map;
 	mlx_t *mlx;
-	mlx_texture_t *bg_texture;
-	mlx_texture_t *wall_texture;
-	mlx_texture_t *player_texture;
-	mlx_texture_t *collect_texture;
+	mlx_image_t *bg_image;
+	mlx_image_t *wall_image;
+	mlx_image_t *player_image;
+	mlx_image_t *collect_image;
 } t_game;
 
+// Prototypes
+void draw_tile(t_game *game, int x, int y);
+void draw_map(t_game *game);
+void move_player(t_game *game, int new_x, int new_y);
 
-void draw_map(char **map, mlx_t* mlx,mlx_texture_t* bg_texture, mlx_texture_t* wall_texture, mlx_texture_t* player_texture, mlx_texture_t* collect_texture);
-
-// Move Player
+// Mover jugador
 void move_player(t_game *game, int new_x, int new_y)
 {
 	char **map = game->map;
-	if (map[new_y][new_x] != '1') //if it's not a wall
-	{
-		map[game->player.y][game->player.x] = '0';
 
+	// Verificar que la nueva posición no sea una pared
+	if (map[new_y][new_x] != '1') {
+		// Limpiar el sprite del jugador anterior dibujando solo el fondo
+		mlx_image_to_window(game->mlx, game->bg_image, game->player.x * TILE_SIZE, game->player.y * TILE_SIZE);
+
+		// Si hay un coleccionable en la posición anterior, redibujarlo
+		if (game->map[game->player.y][game->player.x] == 'C')
+			mlx_image_to_window(game->mlx, game->collect_image, game->player.x * TILE_SIZE, game->player.y * TILE_SIZE);
+
+		// Actualizar la posición del jugador en el mapa
+		map[game->player.y][game->player.x] = '0';  // Limpiar posición anterior
 		game->player.x = new_x;
 		game->player.y = new_y;
-		map[new_y][new_x] = 'P';
-		ft_printf("player moved to (%d, %d)\n", new_x, new_y);
-		draw_map(game->map, game->mlx, game->bg_texture, game->wall_texture, game->player_texture, game->collect_texture);
-	}
-	else
-	{
+		map[new_y][new_x] = 'P';  // Nueva posición
+
+		// Redibujar el jugador en la nueva posición
+		draw_tile(game, new_x, new_y);
+
+		ft_printf("Player moved to (%d, %d)\n", new_x, new_y);
+	} else {
 		ft_printf("Wall at (%d, %d), can't move!\n", new_x, new_y);
 	}
 }
 
-// Operate the keys
-void my_keyhook(mlx_key_data_t keydata, void* param)
+// Dibujar un tile específico en (x, y)
+void draw_tile(t_game *game, int x, int y)
 {
-	t_game *game = (t_game *)param;
+	// Redibujar el fondo
+	mlx_image_to_window(game->mlx, game->bg_image, x * TILE_SIZE, y * TILE_SIZE);
 
-	if (keydata.action == MLX_PRESS)
-	{
-		if (keydata.key == MLX_KEY_ESCAPE)
-			mlx_close_window(game->mlx);
-		// If we PRESS the 'W' key, move "UP".
-		else if (keydata.key == MLX_KEY_W)
-			move_player(game, game->player.x, game->player.y - 1);
-
-		// If we PRESS the 'S' key, move "Down".
-		if (keydata.key == MLX_KEY_S)
-			move_player(game, game->player.x, game->player.y + 1);
-
-		// If we PRESS the 'A' key, move "Left".
-		if (keydata.key == MLX_KEY_A)
-			move_player(game, game->player.x - 1, game->player.y);
-
-		// If we PRESS the 'D' key, move "Right".
-		if (keydata.key == MLX_KEY_D)
-			move_player(game, game->player.x + 1, game->player.y);
-	}
+	// Dibujar el elemento correspondiente
+	if (game->map[y][x] == '1')
+		mlx_image_to_window(game->mlx, game->wall_image, x * TILE_SIZE, y * TILE_SIZE);
+	else if (game->map[y][x] == 'P')
+		mlx_image_to_window(game->mlx, game->player_image, x * TILE_SIZE, y * TILE_SIZE);
+	else if (game->map[y][x] == 'C')
+		mlx_image_to_window(game->mlx, game->collect_image, x * TILE_SIZE, y * TILE_SIZE);
 }
 
-void	draw_map(char **map, mlx_t* mlx, mlx_texture_t* bg_texture, mlx_texture_t* wall_texture, mlx_texture_t* player_texture, mlx_texture_t* collect_texture)
+// Dibujar el mapa completo (solo al inicio)
+void draw_map(t_game *game)
 {
-	int	title_size = 200;
-	int	y = 0;
-
-	while (map[y])
-	{
-		int	x = 0;
-		while (map[y][x])
-		{
-			mlx_image_t* bg = mlx_texture_to_image(mlx, bg_texture);
-			if (bg)
-				mlx_image_to_window(mlx, bg, x * title_size, y * title_size);
-
-			if (map[y][x] == '1')
-			{
-				mlx_image_t* wall = mlx_texture_to_image(mlx, wall_texture);
-				if (wall)
-					mlx_image_to_window(mlx, wall, x * title_size, y * title_size);
-			}
-			if (map [y][x] == 'P')
-			{
-				mlx_image_t* player = mlx_texture_to_image(mlx, player_texture);
-				if (player)
-					mlx_image_to_window(mlx, player, x * title_size, y * title_size);
-			}
-			if (map [y][x] == 'C')
-			{
-				mlx_image_t* collect = mlx_texture_to_image(mlx, collect_texture);
-				if (collect)
-					mlx_image_to_window(mlx, collect, x * title_size, y * title_size);
-			}
+	int y = 0;
+	while (game->map[y]) {
+		int x = 0;
+		while (game->map[y][x]) {
+			draw_tile(game, x, y);
 			x++;
 		}
 		y++;
 	}
 }
 
-char	**read_map(const char *filename)
+// Manejar teclas
+void my_keyhook(mlx_key_data_t keydata, void* param)
 {
-	int	fd = open(filename, O_RDONLY);
-	if (fd < 0)
-	{
-		ft_printf("%s", "Error reading map\n");
-		return (NULL);
+	t_game *game = (t_game *)param;
+
+	if (keydata.action == MLX_PRESS) {
+		if (keydata.key == MLX_KEY_ESCAPE)
+			mlx_close_window(game->mlx);
+		// Movimiento del jugador
+		else if (keydata.key == MLX_KEY_W)
+			move_player(game, game->player.x, game->player.y - 1);
+		else if (keydata.key == MLX_KEY_S)
+			move_player(game, game->player.x, game->player.y + 1);
+		else if (keydata.key == MLX_KEY_A)
+			move_player(game, game->player.x - 1, game->player.y);
+		else if (keydata.key == MLX_KEY_D)
+			move_player(game, game->player.x + 1, game->player.y);
+	}
+}
+
+// Leer mapa desde archivo
+char **read_map(const char *filename)
+{
+	int fd = open(filename, O_RDONLY);
+	if (fd < 0) {
+		ft_printf("Error reading map\n");
+		return NULL;
 	}
 
-	char	*line;
-	char	**map = malloc(sizeof(char*) * 100);
-	int	i = 0;
-	while ((line = get_next_line(fd)) != NULL)
-	{
+	char **map = NULL;
+	char *line;
+	int i = 0;
+
+	// Leer líneas hasta el final del archivo
+	while ((line = get_next_line(fd)) != NULL) {
+		map = realloc(map, sizeof(char*) * (i + 2));  // Ajustar el tamaño dinámicamente
 		map[i++] = line;
 	}
 	map[i] = NULL;
+
 	close(fd);
-	return (map);
+	return map;
 }
 
-int32_t	main(void)
+int32_t main(void)
 {
-	mlx_t*	mlx;
-
-	if (!(mlx = mlx_init(WIDTH, HEIGHT, "Window w B", false)))
-		return (EXIT_FAILURE);
-
-	mlx_texture_t* bg_texture = mlx_load_png("bg.png");
-	mlx_texture_t* wall_texture = mlx_load_png("wall_jung.png");
-	mlx_texture_t* player_texture = mlx_load_png("player.png");
-	mlx_texture_t* collect_texture = mlx_load_png("Gold.png");
-	if (!bg_texture || !wall_texture || !player_texture || !collect_texture)
-	{
-		ft_printf("%s", "Error loading textures\n");
-		mlx_terminate(mlx);
+	mlx_t *mlx = mlx_init(WIDTH, HEIGHT, "So_long Optimized", false);
+	if (!mlx)
 		return EXIT_FAILURE;
-	}
 
-	char	**map = read_map("map.ber");
-	if (!map)
-	{
-		mlx_delete_texture(wall_texture);
-		mlx_delete_texture(bg_texture);
-		mlx_delete_texture(player_texture);
-		mlx_delete_texture(collect_texture);
+	// Cargar texturas y convertir a imágenes una sola vez
+	mlx_texture_t *bg_texture = mlx_load_png("bg.png");
+	mlx_texture_t *wall_texture = mlx_load_png("wall_jung.png");
+	mlx_texture_t *player_texture = mlx_load_png("player.png");
+	mlx_texture_t *collect_texture = mlx_load_png("Gold.png");
+
+	if (!bg_texture || !wall_texture || !player_texture || !collect_texture) {
+		ft_printf("Error loading textures\n");
 		mlx_terminate(mlx);
 		return EXIT_FAILURE;
 	}
 
 	t_game game;
-	game.map = map;
 	game.mlx = mlx;
-	game.bg_texture = bg_texture;
-	game.wall_texture = wall_texture;
-	game.player_texture = player_texture;
-	game.collect_texture = collect_texture;
 
-	for (int y = 0; map[y]; y++)
-	{
-		for (int x =  0; map[y][x]; x++)
-		{
-			if (map[y][x] == 'P')
-			{
+	// Convertir texturas a imágenes
+	game.bg_image = mlx_texture_to_image(mlx, bg_texture);
+	game.wall_image = mlx_texture_to_image(mlx, wall_texture);
+	game.player_image = mlx_texture_to_image(mlx, player_texture);
+	game.collect_image = mlx_texture_to_image(mlx, collect_texture);
+
+	// Leer mapa
+	game.map = read_map("map.ber");
+	if (!game.map) {
+		ft_printf("Error reading map\n");
+		mlx_terminate(mlx);
+		return EXIT_FAILURE;
+	}
+
+	// Encontrar posición inicial del jugador
+	int y = 0;
+	while (game.map[y]) {
+		int x = 0;
+		while (game.map[y][x]) {
+			if (game.map[y][x] == 'P') {
 				game.player.x = x;
 				game.player.y = y;
+				break;
 			}
+			x++;
 		}
+		y++;
 	}
-	//ft_printf("%s", *map);
-	draw_map(map, mlx, bg_texture, wall_texture, player_texture, collect_texture);
 
+	// Dibujar el mapa inicialmente
+	draw_map(&game);
+
+	// Asignar función de teclas y comenzar loop
 	mlx_key_hook(mlx, my_keyhook, &game);
 	mlx_loop(mlx);
 
-	for (int i = 0; map[i]; i++)
-		free(map[i]);
-	free(map);
-	mlx_delete_texture(bg_texture);
-	mlx_delete_texture(wall_texture);
-	mlx_delete_texture(player_texture);
-	mlx_delete_texture(collect_texture);
+	// Liberar memoria y texturas
+	y = 0;
+	while (game.map[y])
+		free(game.map[y++]);
+	free(game.map);
+
 	mlx_terminate(mlx);
-	return (EXIT_SUCCESS);
+	return EXIT_SUCCESS;
 }
 
