@@ -6,7 +6,7 @@
 #    By: dagarmil <dagarmil@student.42barcelon      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/08/28 12:48:53 by dagarmil          #+#    #+#              #
-#    Updated: 2024/09/13 14:32:40 by dagarmil         ###   ########.fr        #
+#    Updated: 2024/09/19 11:07:42 by dagarmil         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 NAME = so_long.out

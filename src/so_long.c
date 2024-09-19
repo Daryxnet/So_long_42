@@ -5,11 +5,10 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: dagarmil <dagarmil@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/09/13 15:52:18 by dagarmil          #+#    #+#             */
-/*   Updated: 2024/09/17 16:14:44 by dagarmil         ###   ########.fr       */
+/*   Created: 2024/09/13 15:51:44 by dagarmil          #+#    #+#             */
+/*   Updated: 2024/09/19 15:55:40 by dagarmil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
 #include <stdlib.h>
 #include "MLX42.h"
 #include "libft.h"
@@ -107,7 +106,7 @@ void my_keyhook(mlx_key_data_t keydata, void* param)
 {
 	t_game *game = (t_game *)param;
 
-	if (keydata.action == MLX_PRESS) {
+	if (keydata.action == MLX_PRESS || keydata.action == MLX_REPEAT) {
 		if (keydata.key == MLX_KEY_ESCAPE)
 			mlx_close_window(game->mlx);
 		// Movimiento del jugador y cambiar sprite según la dirección
@@ -161,13 +160,13 @@ int32_t main(void)
 		return EXIT_FAILURE;
 
 	// Cargar texturas y convertir a imágenes una sola vez
-	mlx_texture_t *bg_texture = mlx_load_png("bg.png");
-	mlx_texture_t *wall_texture = mlx_load_png("wall_jung.png");
-	mlx_texture_t *player_down_texture = mlx_load_png("player_down.png");  // Sprite mirando hacia abajo
-	mlx_texture_t *player_up_texture = mlx_load_png("player_up.png");      // Sprite mirando hacia arriba
-	mlx_texture_t *player_left_texture = mlx_load_png("player_left.png");  // Sprite mirando hacia la izquierda
-	mlx_texture_t *player_right_texture = mlx_load_png("player_right.png");// Sprite mirando hacia la derecha
-	mlx_texture_t *collect_texture = mlx_load_png("Gold.png");
+	mlx_texture_t *bg_texture = mlx_load_png("textures/bg.png");
+	mlx_texture_t *wall_texture = mlx_load_png("textures/wall_jung.png");
+	mlx_texture_t *player_down_texture = mlx_load_png("textures/characters/Cowboy/walk/player_down.png");  // Sprite mirando hacia abajo
+	mlx_texture_t *player_up_texture = mlx_load_png("textures/characters/Cowboy/walk/player_up.png");      // Sprite mirando hacia arriba
+	mlx_texture_t *player_left_texture = mlx_load_png("textures/characters/Cowboy/walk/player_left.png");  // Sprite mirando hacia la izquierda
+	mlx_texture_t *player_right_texture = mlx_load_png("textures/characters/Cowboy/walk/player_right.png");// Sprite mirando hacia la derecha
+	mlx_texture_t *collect_texture = mlx_load_png("textures/Gold.png");
 
 	if (!bg_texture || !wall_texture || !player_down_texture || !player_up_texture ||
 		!player_left_texture || !player_right_texture || !collect_texture) {
